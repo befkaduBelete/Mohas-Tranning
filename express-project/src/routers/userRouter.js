@@ -2,12 +2,27 @@ import { request, Router } from "express";
 import { userList } from "../utils/userList.js";
 
 import { loginMiddleware } from "../utils/middlewares.js";
-import { body, checkSchema, matchedData, validationResult } from "express-validator";
+import {
+  body,
+  checkSchema,
+  matchedData,
+  validationResult,
+} from "express-validator";
 import { userValidationSchema } from "../utils/schema/userValidation.js";
 
 const userRoute = Router();
 
+// Set One
 userRoute.get("/api/users", (request, response) => {
+  console.log(request.session);
+  console.log(request.sessionID);
+  request.sessionStore.get(request.session.id, (err, sessionData) => {
+    if (err) {
+      console.log(err);
+      throw err;
+    }
+    console.log(sessionData);
+  });
   return response.send(userList);
 });
 
@@ -66,10 +81,9 @@ userRoute.post(
   "/api/users",
   checkSchema(userValidationSchema),
 
-
   (request, response) => {
     const result = validationResult(request);
-    const data = matchedData(request)
+    const data = matchedData(request);
     console.log(result);
     console.log(request.body);
     const { body } = request;
