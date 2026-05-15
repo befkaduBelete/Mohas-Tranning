@@ -6,10 +6,16 @@ import session from "express-session";
 import { userList } from "./utils/userList.js";
 import passport from "passport";
 import "./auth/local-auth.js";
+import mongoose from "mongoose";
+import dbConnection from "./utils/db.js";
 
 const app = express();
-
 app.use(express.json());
+// mongoose
+//   .connect("mongodb://localhost:27017/express_project")
+//   .then(() => console.log("Connected to the Database"))
+//   .catch((err) => console.log(`error ${err}`));
+dbConnection();
 
 app.use(cookieParser("QIYASS"));
 app.use(

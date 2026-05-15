@@ -1,6 +1,4 @@
 export const userValidationSchema = {
-  
-
   username: {
     notEmpty: {
       errorMessage: "Username Can no be null",
@@ -14,6 +12,9 @@ export const userValidationSchema = {
     },
   },
   displayName: {
+    notEmpty: true,
+  },
+  password: {
     notEmpty: true,
   },
 };

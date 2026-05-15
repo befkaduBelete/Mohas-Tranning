@@ -9,24 +9,40 @@ import {
   validationResult,
 } from "express-validator";
 import { userValidationSchema } from "../utils/schema/userValidation.js";
+import { User } from "../utils/schema/user.js";
 
 const userRoute = Router();
 
 // Set One
-userRoute.get("/api/users", (request, response) => {
-  console.log(request.session);
-  console.log(request.sessionID);
-  request.sessionStore.get(request.session.id, (err, sessionData) => {
-    if (err) {
-      console.log(err);
-      throw err;
-    }
-    console.log(sessionData);
-  });
-  return response.send(userList);
-});
+// userRoute.get("/api/users", (request, response) => {
+//   console.log(request.session);
+//   console.log(request.sessionID);
+//   request.sessionStore.get(request.session.id, (err, sessionData) => {
+//     if (err) {
+//       console.log(err);
+//       throw err;
+//     }
+//     console.log(sessionData);
+//   });
+//   return response.send(userList);
+// });
 
 //URL PARAMETRS
+userRoute.get("/api/users", async (request, response) => {
+  try {
+    const userList = await User.find();
+    const count = await User.countDocuments();
+    response.status(200).send({
+      count: count,
+      data: userList,
+    });
+  } catch (err) {
+    response.status(500).send({
+      messgae: "Faild to fatch users",
+      error: err.message,
+    });
+  }
+});
 
 userRoute.get("/api/users/:id", (request, response) => {
   const userId = parseInt(request.params.id);
@@ -77,19 +93,37 @@ userRoute.put("/api/users/:id", (request, response) => {
   return response.status(200).send(userList);
 });
 
+// userRoute.post(
+//   "/api/users",
+//   checkSchema(userValidationSchema),
+
+//   (request, response) => {
+//     const result = validationResult(request);
+//     const data = matchedData(request);
+//     console.log(result);
+//     console.log(request.body);
+//     const { body } = request;
+//     const newUser = { id: userList[userList.length - 1].id + 1, ...data };
+//     userList.push(newUser);
+//     return response.status(201).send(newUser);
+//   },
+// );
+
 userRoute.post(
   "/api/users",
   checkSchema(userValidationSchema),
-
-  (request, response) => {
-    const result = validationResult(request);
-    const data = matchedData(request);
-    console.log(result);
-    console.log(request.body);
+  async (request, response) => {
     const { body } = request;
-    const newUser = { id: userList[userList.length - 1].id + 1, ...data };
-    userList.push(newUser);
-    return response.status(201).send(newUser);
+    const result = validationResult(request);
+    if (!result.isEmpty) response.status(400).send({ error: result.array() });
+    const data = matchedData(request);
+    const newUser = new User(data);
+    try {
+      const savedUser = await newUser.save();
+      return response.status(201).send(savedUser);
+    } catch (err) {
+      console.log(err);
+    }
   },
 );
 
